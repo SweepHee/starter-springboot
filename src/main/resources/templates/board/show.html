@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+  <meta charset="UTF-8">
+  <title>Title</title>
+</head>
+<body>
+
+<table>
+  <tr>
+    <th>제목</th>
+    <td>
+      <p th:text="${board.subject}"></p>
+    </td>
+  </tr>
+  <tr>
+    <th>내용</th>
+    <td>
+      <p th:text="${board.content}"></p>
+    </td>
+  </tr>
+</table>
+
+
+<div th:if="${#authentication.principal.id} == ${board.user.id}">
+  <form action="" name="modifyForm">
+    <input type="hidden" name="boardId" th:value="${id}">
+    <input type="hidden" name="_method" value="">
+    <button type="button" id="editBtn">수정</button>
+    <button type="button" id="deleteBtn">삭제</button>
+  </form>
+</div>
+
+
+
+
+<script>
+
+  const modifyForm = document.modifyForm;
+  const editBtn = document.getElementById("editBtn");
+  const deleteBtn = document.getElementById("deleteBtn");
+
+  /* 수정하기 버튼 눌렀을때 수정페이지로 */
+  editBtn.addEventListener("click", function () {
+    modifyForm.action = `/board/${modifyForm.boardId.value}/edit`
+    modifyForm.method = "get";
+    modifyForm.submit();
+  })
+
+  /* 삭제하기 버튼 눌렀을때 삭제페이지로 */
+  deleteBtn.addEventListener("click", function () {
+    if (!confirm("글을 삭제하시겠습니까?")) return false;
+
+    modifyForm.action = `/board/delete/${modifyForm.boardId.value}`;
+    modifyForm.method = "post";
+    modifyForm._method.value = "delete";
+    modifyForm.submit();
+  })
+
+
+</script>
+
+</body>
+</html>

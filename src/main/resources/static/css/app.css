@@ -1,0 +1,15 @@
+#pagination ul li {
+    display: inline-block;
+    border: 1px solid;
+    list-style: none;
+}
+
+#pagination ul li + li {
+    border-left : none;
+}
+
+#pagination ul li.current a,
+#pagination ul li.current button {
+    color: blue;
+    font-weight: bold;
+}

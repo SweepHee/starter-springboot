@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+  <meta charset="UTF-8">
+  <title>Title</title>
+</head>
+<body>
+
+<form action="/board" method="post" name="boardRegisterForm">
+  <input type="hidden" id="boardId" name="id" th:if="${board?.id}" th:value="${board?.id}">
+  <input type="hidden" id="userId" name="userId" th:value="${#authentication.principal.id}">
+  <input type="hidden" id="method" name="_method" value="">
+  <table>
+    <tr>
+      <th>제목</th>
+      <td>
+        <input type="text" name="subject" required th:value="${board?.subject}">
+      </td>
+    </tr>
+    <tr>
+      <th>내용</th>
+      <td>
+        <textarea name="content" id="content" cols="30" rows="10" th:text="${board?.content}"></textarea>
+      </td>
+    </tr>
+  </table>
+
+  <button type="button" id="submitBtn">작성</button>
+
+</form>
+
+<script>
+  const registerForm = document.boardRegisterForm;
+  const submitBtn = document.getElementById("submitBtn");
+  const method = document.getElementById("method");
+
+  /* 수정하기일때 */
+  document.addEventListener("DOMContentLoaded", function () {
+
+    const boardId = document.getElementById("boardId").value;
+    if (boardId != null) {
+      method.value = "put";
+      registerForm.action = `/board/${boardId}`;
+    }
+
+  })
+
+  submitBtn.addEventListener("click", function () {
+    registerForm.submit();
+  })
+
+</script>
+
+</body>
+</html>

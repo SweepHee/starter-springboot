@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<form action="" method="post" name="joinForm">
+    아이디: <input type="text" name="username" id="username" th:value="${param.username}">
+    <button type="button" id="duplicateCheckBtn">중복검사</button>
+    <br>
+    비밀번호: <input type="text" name="password" id="password"> <br>
+    <button id="submitBtn" type="button" disabled>승인</button>
+</form>
+
+    <script>
+
+        document.addEventListener("DOMContentLoaded", function () {
+
+            /* 에러 알러트 만들기 */
+            const URLSearch = new URLSearchParams(location.search);
+            const error = URLSearch.get("error");
+
+            switch (error) {
+                case "1": break;
+                case "2": alert("중복아이디 입니다."); break;
+            }
+
+        })
+
+        /* form 변수 */
+        const dupCheckBtn = document.getElementById("duplicateCheckBtn");
+        const submitBtn = document.getElementById("submitBtn");
+        const username = document.getElementById("username");
+
+        /* 중복검사 함수 */
+        async function duplicateCheck () {
+            const response = await fetch("/join/idDuplicateCheck?username="+username.value, {
+                method: "get",
+                mode: "cors",
+            });
+            return response.status === 200; // 200: 중복아님, error: 중복
+        }
+
+        /* 중복검사 버튼 눌렀을때 */
+        dupCheckBtn.addEventListener("click", async function() {
+            const response = await duplicateCheck();
+            let message = response ? "사용할 수 있는 아이디입니다" : "이미 존재하는 아이디입니다";
+            submitBtn.disabled = !response;
+            alert(message);
+        })
+
+        /* 폼서브밋 눌렀을때 */
+        submitBtn.addEventListener("click", async function () {
+
+            const $form = document.joinForm;
+
+            if ($form.username.value == "") {
+                alert("아이디를 입력해주세요");
+                return false;
+            }
+            if ($form.password.value == "") {
+                alert("비밀번호를 입력해주세요");
+                return false;
+            }
+
+            const response = await duplicateCheck();
+            if (response) {
+                document.joinForm.submit();
+            } else {
+                alert("중복아이디입니다.");
+                submitBtn.disabled = true
+            }
+
+        })
+
+
+    </script>
+
+</body>
+</html>

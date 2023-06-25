@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+  <meta charset="UTF-8">
+  <title>Title</title>
+  <link rel="stylesheet" th:href="@{css/app.css}">
+</head>
+<body>
+
+  <table>
+    <tr>
+      <th>번호</th>
+      <th>제목</th>
+      <th>글쓴이</th>
+      <th>조회수</th>
+      <th>날짜</th>
+    </tr>
+    <tr>
+
+    </tr>
+  </table>
+
+
+  <a href="/board/create">글쓰기</a>
+
+  <table>
+    <tr>
+      <th>제목</th>
+      <th>내용</th>
+      <th>글쓴이</th>
+      <th>날짜</th>
+    </tr>
+    <tr th:each="post : ${posts}">
+      <td th:text="${post.subject}"></td>
+      <td th:text="${post.content}"></td>
+      <td th:text="${post.user.username}"></td>
+      <td th:text="${post.createdAt}"></td>
+    </tr>
+  </table>
+
+  <div id="pagination">
+
+  </div>
+
+  <div id="pagination2">
+
+  </div>
+
+  <div sec:authorize-expr="isAuthenticated()">
+    <span sec:authentication="principal.username"></span>님이 로그인 상태
+    <span sec:authentication="principal.id"></span>님이 로그인 상태
+  </div>
+  <div sec:authorize="hasRole('ROLE_ADMIN')">
+    admin
+  </div>
+  <div sec:authorize="hasRole('ROLE_USER')">
+    user
+  </div>
+
+
+  <script th:inline="javascript" type="module">
+    import Pagination from "/js/pagination.js"
+
+    const pageable = [[ ${pagination} ]];
+    new Pagination().setPage(pageable.page)
+                .setJpaPagination(true)
+                .setTotalPage(pageable.totalPage)
+                .setTotalElement(pageable.totalElement)
+                .setCurrentPage(pageable.currentPage)
+                .setCurrentElement(pageable.currentElement)
+                .setIsFirst(pageable.isFirst)
+                .setIsLast(pageable.isLast)
+                .setHasPrevious(pageable.hasPrevious)
+                .setHasNext(pageable.hasNext)
+                .setPageLength(pageable.pageLength)
+                .setSize(pageable.size)
+                .setPageRanges(pageable.pageRanges)
+                .paginate();
+
+
+  </script>
+
+</body>
+</html>
