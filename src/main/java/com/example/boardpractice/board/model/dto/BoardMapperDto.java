@@ -1,6 +1,5 @@
-package com.example.boardpractice.board.model;
+package com.example.boardpractice.board.model.dto;
 
-import com.example.boardpractice.auth.entity.User;
 import com.example.boardpractice.board.entity.Board;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,7 +8,20 @@ import lombok.NoArgsConstructor;
 
 import java.sql.Timestamp;
 
+@Data
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class BoardMapperDto {
+
+    private int boardId;
+    private String subject;
+    private String content;
+    private int userId;
+    private Timestamp createdAt;
+    private Timestamp updatedAt;
+    private Long view;
+
 
     @Data
     @Builder
@@ -20,7 +32,7 @@ public class BoardMapperDto {
         private int boardId;
         private String subject;
         private String content;
-        private User user;
+        private int userId;
         private Timestamp createdAt;
         private Timestamp updatedAt;
         private Long view;

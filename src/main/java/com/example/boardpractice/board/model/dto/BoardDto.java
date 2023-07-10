@@ -1,4 +1,4 @@
-package com.example.boardpractice.board.model;
+package com.example.boardpractice.board.model.dto;
 
 import com.example.boardpractice.auth.entity.User;
 import com.example.boardpractice.board.entity.Board;

@@ -1,7 +1,8 @@
 package com.example.boardpractice.board.entity;
 
 import com.example.boardpractice.auth.entity.User;
-import com.example.boardpractice.board.model.BoardDto;
+import com.example.boardpractice.board.model.dto.BoardDto;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -29,6 +30,7 @@ public class Board {
     @Lob
     private String content;
 
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user;

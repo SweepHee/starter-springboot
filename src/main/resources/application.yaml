@@ -1,0 +1,94 @@
+server:
+  port: 8080
+  servlet:
+#    context-path: /user
+    session:
+      timeout: 3600
+  tomcat:
+    uri-encoding: UTF-8
+
+
+
+log4jdbc:
+  spylogdelegator:
+    name: net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator
+  dump:
+    sql:
+      maxlinelength: 0
+
+jasypt:
+  encryptor:
+    bean: jasyptStringEncryptor
+
+mybatis:
+  mapper-locations: mybatis/mapper/*.xml
+  configuration:
+    map-underscore-to-camel-case: true
+
+
+
+logging:
+  config: classpath:logback.xml
+
+spring:
+  main:
+    banner-mode: off
+  application:
+    name: SPRINGBOOT STARTER
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        format_sql: true #To beautify or pretty print the SQL
+        show_sql: true #show sql
+#  config:
+#    import:
+#      - classpath:/application-oauth.yml
+#      - classpath:/application-import.yml
+  profiles:
+    active: local
+    group:
+      "local": "local"
+      "dev": "dev"
+      "prod": "prod"
+
+---
+spring:
+  config:
+    activate:
+      on-profile: local
+  batch:
+    job:
+      enabled: true
+    jdbc:
+      initialize-schema: never
+  datasource:
+    url: jdbc:log4jdbc:mariadb://localhost:3306/boardBack?characterEncoding=UTF-8&serverTimezone=Asia/Seoul
+    username: root
+    password: ENC(lBhSX3VamELAAppegJiQbg==)
+    driver-class-name: net.sf.log4jdbc.sql.jdbcapi.DriverSpy
+
+---
+server:
+  port: 80
+spring:
+  config:
+    activate:
+      on-profile: dev
+  datasource:
+    driverClassName: net.sf.log4jdbc.sql.jdbcapi.DriverSpy
+    url:
+    username:
+    password:
+
+---
+spring:
+  config:
+    activate:
+      on-profile: prod
+  datasource:
+    driverClassName: net.sf.log4jdbc.sql.jdbcapi.DriverSpy
+    url:
+    username:
+    password:

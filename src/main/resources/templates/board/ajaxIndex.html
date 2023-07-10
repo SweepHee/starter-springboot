@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+  <meta charset="UTF-8">
+  <title>Title</title>
+  <link rel="stylesheet" th:href="@{/css/app.css}">
+</head>
+<body>
+
+
+
+
+  <a href="/board/create">글쓰기</a>
+
+  <div id="board">
+
+  </div>
+
+  <script type="module">
+    import Pagination from "/js/pagination.js"
+
+
+
+    fetch("http://localhost:8080/board/dataSend", {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json", // text/html; charset=utf-8,
+        // "Accept": "text/html"
+      }
+    }).then((response) =>
+        response.json()
+    ).then(data => {
+        const board = document.getElementById("board")
+        board.innerHTML = "";
+        board.insertAdjacentHTML("afterbegin", data);
+
+    });
+  </script>
+
+</body>
+</html>

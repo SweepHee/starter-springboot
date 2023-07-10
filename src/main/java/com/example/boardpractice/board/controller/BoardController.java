@@ -1,28 +1,23 @@
 package com.example.boardpractice.board.controller;
 
-import com.example.boardpractice.auth.entity.User;
 import com.example.boardpractice.auth.service.MemberDetails;
 import com.example.boardpractice.board.entity.Board;
-import com.example.boardpractice.board.model.BoardDto;
-import com.example.boardpractice.board.model.BoardMapperDto;
-import com.example.boardpractice.board.model.PaginationDto;
+import com.example.boardpractice.board.model.dto.BoardDto;
+import com.example.boardpractice.board.model.dto.BoardMapperDto;
+import com.example.boardpractice.board.model.dto.PaginationDto;
 import com.example.boardpractice.board.service.BoardService;
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.nio.file.AccessDeniedException;
-import java.security.Principal;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Optional;
 
 @Controller
 @RequestMapping("/board")
@@ -32,20 +27,62 @@ public class BoardController {
     private final BoardService boardService;
 
     @GetMapping
-    public String index(Model model, @PageableDefault(size = 1, page = 0) Pageable pageable) {
+    public String index(Model model, @PageableDefault(size = 10, page = 0) Pageable pageable) {
 
         Page<Board> boards = boardService.get(pageable);
+        System.out.println(boards);
         Page<BoardDto.Create> boardsToMap = boards.map(board -> new BoardDto.Create().EntityToDto(board));
         PaginationDto pagination = PaginationDto.pageToDto(boards);
-
-//        List<BoardMapperDto.Create> board2 = boardService.getAllByMapper();
-//        board2.forEach(System.out::println);
 
         model.addAttribute("posts", boardsToMap);
         model.addAttribute("pagination", pagination);
         return "/board/index";
 
     }
+
+    @GetMapping("/index2")
+    public String index2(Model model, @PageableDefault(size = 10, page = 0) Pageable pageable) {
+
+        Page<Board> boards = boardService.get(pageable);
+        Page<BoardDto.Create> boardsToMap = boards.map(board -> new BoardDto.Create().EntityToDto(board));
+        PaginationDto pagination = PaginationDto.pageToDto(boards);
+
+        model.addAttribute("posts", boardsToMap);
+        model.addAttribute("pagination", pagination);
+        return "/board/index2";
+
+    }
+
+    @ResponseBody
+    @GetMapping("/dataSend")
+    public HashMap<String, Object> dataSend(@PageableDefault(size = 10, page = 0) Pageable pageable) {
+        Page<Board> boards = boardService.get(pageable);
+        Page<BoardDto.Create> boardsToMap = boards.map(board -> new BoardDto.Create().EntityToDto(board));
+        PaginationDto pagination = PaginationDto.pageToDto(boards);
+
+        HashMap<String, Object> map = new HashMap<>();
+        map.put("posts", boardsToMap);
+        map.put("pagination", pagination);
+        return map;
+    }
+
+
+    @GetMapping("/ajaxIndex")
+    public String ajaxIndex() {
+        return "/board/ajaxIndex";
+    }
+
+    @GetMapping("/list")
+    public String listAjax(Model model, @PageableDefault(size = 10, page = 0) Pageable pageable) {
+        Page<Board> boards = boardService.get(pageable);
+        Page<BoardDto.Create> boardsToMap = boards.map(board -> new BoardDto.Create().EntityToDto(board));
+        PaginationDto pagination = PaginationDto.pageToDto(boards);
+        model.addAttribute("posts", boardsToMap);
+        model.addAttribute("pagination", pagination);
+        return "/board/ajaxBoardData";
+    }
+
+
 
     @GetMapping("/create")
     public String create() {

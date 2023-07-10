@@ -34,7 +34,7 @@
     <tr th:each="post : ${posts}">
       <td th:text="${post.subject}"></td>
       <td th:text="${post.content}"></td>
-      <td th:text="${post.user.username}"></td>
+<!--      <td th:text="${post.user.username}"></td>-->
       <td th:text="${post.createdAt}"></td>
     </tr>
   </table>
@@ -43,9 +43,6 @@
 
   </div>
 
-  <div id="pagination2">
-
-  </div>
 
   <div sec:authorize-expr="isAuthenticated()">
     <span sec:authentication="principal.username"></span>님이 로그인 상태
@@ -58,24 +55,24 @@
     user
   </div>
 
+  <script>
+    function customGo() {
+      console.log("customGo!")
+    }
+  </script>
 
   <script th:inline="javascript" type="module">
     import Pagination from "/js/pagination.js"
 
     const pageable = [[ ${pagination} ]];
-    new Pagination().setPage(pageable.page)
+
+    new Pagination()
                 .setJpaPagination(true)
                 .setTotalPage(pageable.totalPage)
-                .setTotalElement(pageable.totalElement)
                 .setCurrentPage(pageable.currentPage)
-                .setCurrentElement(pageable.currentElement)
-                .setIsFirst(pageable.isFirst)
-                .setIsLast(pageable.isLast)
-                .setHasPrevious(pageable.hasPrevious)
-                .setHasNext(pageable.hasNext)
                 .setPageLength(pageable.pageLength)
-                .setSize(pageable.size)
-                .setPageRanges(pageable.pageRanges)
+            // .setPageRanges(pageable.pageRanges) // [5,6,7,8,9] 형태로 보여질 페이지를 담을 수 있다. 귀찮으면 아래의 calcPageRange()사용
+                .calcPageRange()
                 .paginate();
 
 

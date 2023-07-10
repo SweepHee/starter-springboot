@@ -1,0 +1,20 @@
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
+<table>
+    <tr>
+        <th>제목</th>
+        <th>내용</th>
+        <th>글쓴이</th>
+        <th>날짜</th>
+    </tr>
+    <tr th:each="post : ${posts}">
+        <td th:text="${post.subject}"></td>
+        <td th:text="${post.content}"></td>
+        <td th:text="${post.user.username}"></td>
+        <td th:text="${post.createdAt}"></td>
+    </tr>
+</table>
+
+
+</html>

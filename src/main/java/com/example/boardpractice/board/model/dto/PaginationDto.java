@@ -1,20 +1,16 @@
-package com.example.boardpractice.board.model;
+package com.example.boardpractice.board.model.dto;
 
 
 import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
 @Builder
-@Getter
-@Setter
+@Data
 public class PaginationDto {
 
     private int page;
@@ -29,7 +25,7 @@ public class PaginationDto {
     private Boolean hasNext;
 
     @Builder.Default
-    private int pageLength = 2;
+    private int pageLength = 5;
     private int size;
 
     private List<Integer> pageRanges = new ArrayList<Integer>();
@@ -71,6 +67,15 @@ public class PaginationDto {
                 .build();
         paginationDto.calcPageRanges();
         return paginationDto;
+
+    }
+
+    @Builder
+    @Data
+    public static class Total {
+
+        private int totalPage;
+        private Long totalElement;
 
     }
 

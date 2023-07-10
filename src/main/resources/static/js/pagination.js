@@ -1,34 +1,27 @@
 export default class Pagination {
 
-
     /*
-    * HOW TO USE
-    ** 생성자 매개변수를 모두 세팅하고 paginate() 메서드를 실행하면 페이지네이트 태그를 원하는 영역에 만들어준다.
-    ** 기본적으로 id="pagination" 태그에 생성되나 setPaginationArea(document.getElementById("wantTAG"))로 원하는 영역을 설정할 수 있다
-    ** 페이지는 ul > li > button 형태로 생성되고 button은 setButtonType(String "button" or "a") 로 a태그로 변경할 수 있다
-    ** pageRanges는 배열로 보여질 페이지를 담는다 Ex) 현재 페이지가 5일때 3,4,5,6,7이 보여지고 싶다면 [3,4,5,6,7] 배열을 넣어주면 된다
-    *** calcPageRange 메서드를 통해서 pageRanges를 생성해도 된다. pageLength는 필수로 설정되어야 한다.
-    *** Ex) 현재 페이지가 5이고 pageLength가 2라면 calcPageRange()를 통해서 pageRange가 [3,4,5,6,7]이 생성됨
+    * @author SweepHee 전승희
     * */
 
     constructor(page=0, totalPage=0, totalElement=0,
-                currentPage=0, currentElement=0, isFirst=false,
+                currentPage=0, isFirst=false,
                 isLast=false, hasPrevious=false, hasNext=false, pageLength=10,
-                size=10, pageRanges=this.calcPageRange())
+                pageRanges=this.calcPageRange())
     {
-        this.page = page;
+        this.page = Number(page);
         this.totalPage = totalPage;
         this.totalElement = totalElement;
         this.currentPage = currentPage;
-        this.currentElement = currentElement
+        // this.currentElement = currentElement
         this.isFirst = isFirst;
         this.isLast = isLast;
         this.hasPrevious = hasPrevious;
         this.hasNext = hasNext;
-        this.pageLength = pageLength; // 페이지네이션에 페이지번호가 최대 몇개까지 보이게 할 것인지
-        this.size = size;
-        this.pageRanges = pageRanges; // [1, 2, 3, 4...]
-        this.paginationType = "ul"; // ul or table(미구현)
+        this.pageLength = pageLength;
+        // this.size = size; // 필요가 없어서 주석처리
+        this.pageRanges = pageRanges;
+        this.paginationType = "ul";
 
         // pagination 영역
         this.area = document.getElementById("pagination");
@@ -42,6 +35,16 @@ export default class Pagination {
         this.lastButton = ">>";
         this.nextButton = ">";
 
+        this.firstButtonTag = "";
+        this.previousButtonTag = "";
+        this.lastButtonTag = "";
+        this.nextButtonTag = "";
+
+        this.disableGo = false;
+        this.customGo = null;
+        this.renderAfter = null;
+        this.customRenderBefore = null;
+
     }
 
     // jpa를 사용중일땐 true(기본값), 사용하지 않는다면 false
@@ -49,14 +52,16 @@ export default class Pagination {
         this.jpaPagination = jpaPagination;
         return this;
     }
-
+    
+    // setPage만 해줘도 this.currentPage 세팅되게 수정
     setPage(page) {
-        this.page = page;
+        this.page = Number(page);
+        this.currentPage = Number(page);
         return this;
     }
 
     setTotalPage(totalPage) {
-        this.totalPage = totalPage;
+        this.totalPage = Number(totalPage);
         return this;
     }
 
@@ -66,7 +71,8 @@ export default class Pagination {
     }
 
     setCurrentPage(currentPage) {
-        this.currentPage = currentPage;
+        this.currentPage = Number(currentPage);
+        this.page = Number(currentPage);
         return this;
     }
 
@@ -149,42 +155,70 @@ export default class Pagination {
     // 페이지 버튼 타입을 선택할 수 있음. button or a
     setButtonType(type = "button") {
         this.buttonType = type;
+        return this;
+    }
+
+    setDisableGo(disableGo) {
+        if (typeof disableGo != "boolean") {
+            console.error(" 'disableGo' must be a boolean type ")
+            return false;
+        }
+        this.disableGo = disableGo;
+        return this;
+    }
+    
+    // 페이지 이동 커스텀 함수 사용시 fnName에 문자열로 함수이름을 넘긴다. 넘기는 페이지에서 type="module"이 아닌 script태그에 함수가 정의되어 있어야 한다
+    setCustomGo(fnName) {
+        this.customGo = fnName;
+        return this;
+    }
+    
+    // 페이지네이션 렌더 전에 실행시키고 싶은 함수가 있을때 셋. 함수는 반드시 type="module"이 아닌 script태그에 정의되어야 함
+    setCustomRenderBefore(customRenderBefore) {
+        this.customRenderBefore = customRenderBefore;
+        return this;
+    }
+    
+    // 페이지네이션 렌더 후에 실행시키고 싶은 함수가 있을때 셋. 함수는 반드시 type="module"이 아닌 script태그에 정의되어야 함
+    setRenderAfter(renderAfter) {
+        this.renderAfter = renderAfter;
+        return this;
     }
 
     // 첫페이지로 가기 버튼 만들기 디폴트 문자:<< (html 허용, 이미지 허용)
-    setFirstButton (firstButton, type = this.buttonType) {
+    setFirstButtonTag (firstButton, type = this.buttonType) {
         if (type == "button") {
-            this.firstButton = `<button type='button' class="page-common pages" onclick="${this.goFirst()}">${firstButton}</button>`
+            this.firstButtonTag = `<button type='button' class="page-common pages" onclick="${this.goFirst()}" data-page="${this.jpaPagination ? 0 : 1}">${firstButton}</button>`
         }
         else if (type == "a") {
-            this.firstButton = `<a href="javascript:void(0)" class="page-common pages" onclick="${this.goFirst()}">${firstButton}</a>`
+            this.firstButtonTag = `<a href="javascript:void(0)" class="page-common pages" onclick="${this.goFirst()}" data-page="${this.jpaPagination ? 0 : 1}">${firstButton}</a>`
         }
     }
     // 이전 페이지로 가기 버튼 만들기 디폴트 문자:< (html 허용, 이미지 허용)
-    setPreviousButton (previousButton, type = this.buttonType) {
+    setPreviousButtonTag (previousButton, type = this.buttonType) {
         if (type == "button") {
-            this.previousButton = `<button type='button' class="page-common pages" onclick="${this.goPrev()}">${previousButton}</button>`
+            this.previousButtonTag = `<button type='button' class="page-common pages" onclick="${this.goPrev()}" data-page="${Number(this.currentPage) - 1}">${previousButton}</button>`
         }
         else if (type == "a") {
-            this.previousButton = `<a href="javascript:void(0)" class="page-common pages" onclick="${this.goPrev()}">${previousButton}</a>`
+            this.previousButtonTag = `<a href="javascript:void(0)" class="page-common pages" onclick="${this.goPrev()}" data-page="${Number(this.currentPage) - 1}">${previousButton}</a>`
         }
     }
     // 마지막 페이지로 가기 버튼 만들기 디폴트 문자:>> (html 허용, 이미지 허용)
-    setLastButton (lastButton, type = this.buttonType) {
+    setLastButtonTag (lastButton, type = this.buttonType) {
         if (type == "button") {
-            this.lastButton = `<button type='button' class="page-common pages" onclick="${this.go(this.totalPage)}">${lastButton}</button>`
+            this.lastButtonTag = `<button type='button' class="page-common pages" onclick="${this.go(this.totalPage)}" data-page="${this.jpaPagination ? this.totalPage -1 : this.totalPage}">${lastButton}</button>`
         }
         else if (type == "a") {
-            this.lastButton = `<a href="javascript:void(0)" class="page-common pages" onclick="${this.go(this.totalPage)}">${lastButton}</a>`
+            this.lastButtonTag = `<a href="javascript:void(0)" class="page-common pages" onclick="${this.go(this.totalPage)}" data-page="${this.jpaPagination ? this.totalPage -1 : this.totalPage}">${lastButton}</a>`
         }
     }
     // 다음 페이지로 가기 버튼 만들기 디폴트 문자:> (html 허용, 이미지 허용)
-    setNextButton (nextButton, type = this.buttonType) {
+    setNextButtonTag (nextButton, type = this.buttonType) {
         if (type == "button") {
-            this.nextButton = `<button type='button' class="page-common pages" onclick="${this.goNext()}">${nextButton}</button>`
+            this.nextButtonTag = `<button type='button' class="page-common pages" onclick="${this.goNext()}" data-page="${Number(this.currentPage) + 1}">${nextButton}</button>`
         }
         else if (type == "a") {
-            this.nextButton = `<a href="javascript:void(0)" class="page-common pages" onclick="${this.goNext()}">${nextButton}</a>`
+            this.nextButtonTag = `<a href="javascript:void(0)" class="page-common pages" onclick="${this.goNext()}" data-page="${Number(this.currentPage) + 1}">${nextButton}</a>`
         }
     }
 
@@ -206,11 +240,23 @@ export default class Pagination {
 
 
 
-
     go(page) {
+
+        if (this.disableGo) {
+            return "";
+        }
+
+        if (this.customGo) {
+            return this.customGo + "()";
+        }
 
         let queryString = "";
         if (this.jpaPagination) page--;
+
+        if (this.currentPage == page) {
+            return "";
+        }
+
         window.location.search.replace(/[?&]+([^=&]+)=([^&]*)/gi,
             function (str, key, value) {
                 if (key == "page") return;
@@ -227,10 +273,12 @@ export default class Pagination {
     // 페이지 버튼 만들기
     setButtonToPageNumber(page, type = this.buttonType) {
 
+        page = Number(page);
+
         if (type == "button")
-            return`<button class="page-button" type="button" data-page="${page}" onclick="${this.go(page)}">${page}</button>`;
+            return`<button class="page-button" type="button" data-page="${this.jpaPagination ? page-1 : page}" onclick="${this.go(page)}">${page}</button>`;
         else if (type == "a")
-            return`<a href="javascript:void(0)" data-page="${page}" class="page-button">${page}</a>`;
+            return`<a href="javascript:void(0)" data-page="${this.jpaPagination ? page-1 : page}" class="page-button">${page}</a>`;
     }
 
     isCurrentPage (page) {
@@ -239,10 +287,45 @@ export default class Pagination {
     }
 
     renderBefore() {
-        this.setFirstButton(this.firstButton)
-        this.setPreviousButton(this.previousButton)
-        this.setLastButton(this.lastButton)
-        this.setNextButton(this.nextButton)
+        
+        /* 재렌더링할때 펄스트, 프리비우스 다시 세팅 */
+        if (
+            (this.jpaPagination && this.currentPage == 0)
+            || (!this.jpaPagination && this.currentPage == 1)
+        ) {
+            this.isFirst = true;
+            this.hasPrevious = false;
+        } else {
+            this.isFirst = false;
+            this.hasPrevious = true;
+        }
+
+        /* 재렌더링할때 라스트, 넥스트 다시 세팅 */
+        if ( (this.jpaPagination && (this.totalPage-1) == this.currentPage)
+            || (!this.jpaPagination && this.totalPage == this.currentPage)
+        ) {
+            this.isLast = true;
+            this.hasNext = false;
+        } else {
+            this.isLast = false;
+            this.hasNext = true;
+        }
+
+
+        this.firstButtonTag = "";
+        this.previousButtonTag = "";
+        this.lastButtonTag = "";
+        this.nextButtonTag = "";
+
+        this.setFirstButtonTag(this.firstButton)
+        this.setPreviousButtonTag(this.previousButton)
+        this.setLastButtonTag(this.lastButton)
+        this.setNextButtonTag(this.nextButton)
+
+        if (this.customRenderBefore) {
+            eval(this.customRenderBefore + "()")
+        }
+
     }
 
     render() {
@@ -250,16 +333,16 @@ export default class Pagination {
             `
                 <ul>
                 ${this.isFirst ? "" : 
-                `<li class='page-first pages' data-page='${this.jpaPagination ? 0 : 1}'> ${this.firstButton} </li>`}
+                `<li class='page-first pages' data-page='${this.jpaPagination ? 0 : 1}'> ${this.firstButtonTag} </li>`}
                 ${this.hasPrevious ?
-                `<li class='page-previous pages' data-page="${this.currentPage-1}"> ${this.previousButton} </li>` : "" }
+                `<li class='page-previous pages' data-page="${this.currentPage-1}"> ${this.previousButtonTag} </li>` : "" }
                 ${this.pageRanges.map( (v) => 
                     `<li class="page-number pages ${this.isCurrentPage(v) ? 'current' : ''}" data-page="${v}">${this.setButtonToPageNumber(v)}</li>`
                 ).join("")}
                 ${this.hasNext ?
-                `<li class="page-next pages" data-page="${this.currentPage+1}"> ${this.nextButton} </li>` : "" }
+                `<li class="page-next pages" data-page="${this.currentPage+1}"> ${this.nextButtonTag} </li>` : "" }
                 ${this.isLast ? "" : 
-                `<li class="page-last pages" data-page="${this.totalPage}"> ${this.lastButton} </li>` }
+                `<li class="page-last pages" data-page="${this.jpaPagination ? this.totalPage -1 : this.totalPage}"> ${this.lastButtonTag} </li>` }
                 </ul>        
                 
             `
@@ -268,7 +351,15 @@ export default class Pagination {
 
     paginate() {
         this.renderBefore();
-        this.area.insertAdjacentHTML("afterbegin", this.render());
+        this.area.innerHTML = "";
+        let _render = this.render();
+        this.area.insertAdjacentHTML("afterbegin", _render);
+
+        if (this.renderAfter) {
+            eval(this.renderAfter + "()");
+        }
+
+
         return this;
     }
 

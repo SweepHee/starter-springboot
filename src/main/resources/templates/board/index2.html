@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+  <meta charset="UTF-8">
+  <title>Title</title>
+  <link rel="stylesheet" th:href="@{/css/app.css}">
+</head>
+<body>
+
+<table>
+  <tr>
+    <th>번호</th>
+    <th>제목</th>
+    <th>글쓴이</th>
+    <th>조회수</th>
+    <th>날짜</th>
+  </tr>
+  <tr>
+
+  </tr>
+</table>
+
+
+<a href="/board/create">글쓰기</a>
+
+<div id="board">
+  <table>
+    <tr>
+      <th>제목</th>
+      <th>내용</th>
+      <th>글쓴이</th>
+      <th>날짜</th>
+    </tr>
+    <tbody id="">
+    <tr th:each="post : ${posts}">
+      <td th:text="${post.subject}"></td>
+      <td th:text="${post.content}"></td>
+      <td th:text="${post.user.username}"></td>
+      <td th:text="${post.createdAt}"></td>
+    </tr>
+    </tbody>
+  </table>
+</div>
+
+<div id="pagination">
+
+</div>
+
+
+<div sec:authorize-expr="isAuthenticated()">
+  <span sec:authentication="principal.username"></span>님이 로그인 상태
+  <span sec:authentication="principal.id"></span>님이 로그인 상태
+</div>
+<div sec:authorize="hasRole('ROLE_ADMIN')">
+  admin
+</div>
+<div sec:authorize="hasRole('ROLE_USER')">
+  user
+</div>
+
+
+
+<script th:inline="javascript" type="module">
+  import Pagination from "/js/pagination.js"
+
+
+  /* 화면 로드 후 페이지네이션 만들기 */
+  const pageable = [[ ${pagination} ]];
+
+  const pagination = new Pagination()
+          .setJpaPagination(true)
+          .setTotalPage(pageable.totalPage)
+          .setCurrentPage(pageable.currentPage)
+          .setPageLength(pageable.pageLength)
+          .calcPageRange()
+          // .setPageRanges(pageable.pageRanges)
+          .setDisableGo(true)
+          .paginate();
+
+  pageReload();
+
+  function pageReload () {
+    const paginationArea = document.getElementById("pagination");
+    const pageButtons = paginationArea.querySelectorAll(".pages button");
+    pageButtons.forEach((btn) => {
+
+      btn.addEventListener("click", function () {
+        const page = btn.dataset.page;
+        pagination.setCurrentPage(page).paginate();
+        pageReload();
+
+
+        /* 아래는 자유롭게 ajax로직 구현 */
+
+        fetch("http://localhost:8080/board/list?page=" + page, {
+          method: "GET",
+          headers: {
+            "Content-Type": "text/html; charset=utf-8", // text/html; charset=utf-8,
+            "Accept": "text/html"
+          }
+        }).then((response) =>
+                response.text()
+        ).then(data => {
+          const board = document.getElementById("board")
+          board.innerHTML = "";
+          board.insertAdjacentHTML("afterbegin", data);
+
+        });
+
+      })
+
+    })
+  }
+
+</script>
+
+</body>
+</html>
